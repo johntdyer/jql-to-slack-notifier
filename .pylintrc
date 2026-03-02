@@ -1,0 +1,22 @@
+[MASTER]
+ignore = .venv
+
+[MESSAGES CONTROL]
+disable =
+    C0114,  # missing-module-docstring
+    C0115,  # missing-class-docstring
+    C0116,  # missing-function-docstring
+    C0415,  # import-outside-toplevel (deferred imports inside scheduler closure)
+    R0903,  # too-few-public-methods (API client classes are intentionally small)
+    R0912,  # too-many-branches (issue-block field dispatch is intentionally wide)
+    R0914,  # too-many-locals (emoji-mapping functions unpack many values)
+    R0917,  # too-many-positional-arguments (internal helpers; use keyword args at call sites)
+    W0718,  # broad-exception-caught (scheduler loop intentionally catches all)
+    W1203,  # logging-fstring-interpolation (f-strings in log calls are fine here)
+
+[FORMAT]
+max-line-length = 120
+indent-string = "    "
+
+[DESIGN]
+max-args = 8

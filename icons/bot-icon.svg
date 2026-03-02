@@ -1,0 +1,26 @@
+<!--
+  Slack bot icon for "JQL Notifications" app
+  ───────────────────────────────────────────
+  To set as the bot icon in Slack:
+    1. Convert this SVG to a 512×512 PNG (e.g. https://svgtopng.com or Figma/Inkscape)
+    2. Go to https://api.slack.com/apps → select your app → Basic Information
+    3. Scroll to "Display Information" → click the icon placeholder to upload the PNG
+    4. Save changes — the bot will now appear with this icon in Slack
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bot-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2684FF"/>
+      <stop offset="100%" stop-color="#0052CC"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="80" ry="80" fill="url(#bot-bg)"/>
+  <text
+    x="256" y="375"
+    text-anchor="middle"
+    font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif"
+    font-size="340"
+    font-weight="900"
+    fill="white"
+  >J</text>
+</svg>

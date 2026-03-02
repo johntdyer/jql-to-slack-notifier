@@ -1,0 +1,78 @@
+
+
+jira:
+  base_url: https://somecompany.atlassian.net
+  email: user@somecomany.com
+  # API token is read from JIRA_API_TOKEN environment variable
+
+slack:
+  # Bot token is read from SLACK_BOT_TOKEN environment variable
+
+# Timezone for relative date display (e.g. "Xd" or "Xh until midnight").
+# Uses IANA tz database names. Defaults to UTC if omitted or invalid.
+# Individual queries can override this with their own `timezone:` key.
+timezone: America/Los_Angeles
+
+# -- Emoji overrides (optional) ------------------------------------------------
+# Override or extend the built-in emoji mappings. Keys are case-insensitive.
+# Built-in status:   open, to do, backlog, in progress, in review, review,
+#                    blocked, done, closed, resolved, cancelled, won't fix
+# Built-in priority: blocker, critical, high, medium, low, lowest, trivial
+# Built-in type:     bug, story, task, epic, subtask, improvement, feature
+#
+emojis:
+  header: ":bell:"          # emoji shown before the query name in the header (set to "" to omit)
+                            # to use the Jira logo: import icons/jira-emoji.svg as ":jira:" then set to ":jira:"
+  status:
+    "Accepted": ":white_check_mark:"
+    "Discarded": ":wastebasket:"
+    "In Progress": ":arrows_counterclockwise:"
+    "Ready": ":large_green_circle:"
+  priority:
+    "P0": ":rotating_light:"
+    "P1": ":red_circle:"
+  type:
+    "Change Request": ":memo:"
+    "Incident": ":fire:"
+    "Feature" : ":heavy_dollar_sign:"
+    "Epic" : ":fireworks:"
+
+queries:
+  - name: Items Due this week
+    jql: >-
+      project = PLAT AND
+      'Delivery Area/Team' in cascadeOption('platform', 'Services') AND
+      status NOT IN ('Done', 'Cancelled', 'Accepted', 'Discarded') AND
+      ( 'Target end' >= startOfWeek() or duedate  >= startOfWeek() ) AND
+      ( 'Target end' <= endOfWeek() OR 'Target Date[Date]' <= endOfWeek() )
+      ORDER BY due ASC
+    channel: "#dyer-sandbox"
+    max_results: 15
+    schedule: "0 8 * * 1-5"  # 8:00 AM Mon–Fri in the configured timezone
+    fields:
+      - key
+      - summary
+      - assignee
+      - status
+      - 'Target end'
+    # field_map: maps display name → Jira field ID for custom fields
+    # Run with --debug to see raw field keys in the API response, then fill in below
+    field_map:
+      'Target end': customfield_10102  # replace XXXXX with your actual field ID
+
+  - name: Open CDS CR's
+    jql: >-
+      project=CR AND
+      'Delivery Area/Team' IN cascadeOption('platform','Services') AND
+      status NOT IN ('Done', 'Cancelled', 'Accepted', 'Discarded')
+
+    channel: "#dyer-sandbox"
+    max_results: 20
+    schedule: "0 9 * * 1-5"  # 9:00 AM Mon–Fri in the configured timezone
+    fields:
+      - key
+      - summary
+      - assignee
+      - status
+      - priority
+

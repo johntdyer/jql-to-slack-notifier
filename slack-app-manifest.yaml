@@ -1,0 +1,21 @@
+# Bot icon: convert icons/bot-icon.svg → 512×512 PNG, then upload at:
+#   api.slack.com/apps → your app → Basic Information → Display Information
+display_information:
+  name: JQL Slack Notifications
+  description: Posts Jira JQL search results to Slack channels
+  background_color: "#0052CC"
+
+features:
+  bot_user:
+    display_name: JQL Notifications
+    always_online: false
+oauth_config:
+  scopes:
+    bot:
+      - chat:write        # post messages to channels the bot is a member of
+      - chat:write.public # post to public channels without needing to join first
+
+settings:
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false

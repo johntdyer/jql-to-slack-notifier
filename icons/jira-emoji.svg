@@ -1,0 +1,26 @@
+<!--
+  Custom Slack emoji: :jira:
+  ──────────────────────────
+  To import into Slack:
+    1. Convert this SVG to a 128×128 PNG (e.g. https://svgtopng.com or Figma/Inkscape)
+    2. Go to your workspace: Settings & Administration → Customize Slack → Emoji
+    3. Click "Add Custom Emoji", upload the PNG, and name it "jira"
+    4. The :jira: emoji will now render in messages from this bot
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="jira-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2684FF"/>
+      <stop offset="100%" stop-color="#0052CC"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="22" ry="22" fill="url(#jira-bg)"/>
+  <text
+    x="64" y="98"
+    text-anchor="middle"
+    font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif"
+    font-size="88"
+    font-weight="900"
+    fill="white"
+  >J</text>
+</svg>
