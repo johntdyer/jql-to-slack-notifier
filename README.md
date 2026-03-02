@@ -9,26 +9,48 @@ Runs JQL searches against Jira Cloud and posts pretty-formatted messages to Slac
 Each query produces a Slack message like this:
 
 ```
-┌──────────────────────────────────────┐
-│  🎯  Open CDS CR's                   │  ← large header block
-└──────────────────────────────────────┘
-🔍  *5 issues* matched
+┌─────────────────────────────────────────────────────────────┐
+│  🔔  Items Due This Week                                    │
+└─────────────────────────────────────────────────────────────┘
+🔍  *4 issues* matched
 
-──────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────
 
-🐛 *PROJ-42*  Fix login on Safari        🔵  In Progress
-                                          🚨 Critical  ·  👤 Jane Smith
+📝  *PLAT-1042*  Migrate auth service to OAuth 2.0
+🔵 In Progress  ·  🟡 Medium  ·  👤 Jane Smith  ·  📅 Due 3d
 
-🐛 *PROJ-38*  Payment timeout error      ⚪  Open
-                                          🚨 Critical  ·  👤 Unassigned
+🔥  *CR-88*  Emergency DB failover procedure
+⚪ Open  ·  🚨 P0  ·  👤 Unassigned  ·  📅 Due 5h
 
-──────────────────────────────────────────────────────────────
+🔥  *CR-91*  Rotate prod API keys after breach
+🔄 In Progress  ·  🔴 P1  ·  👤 Alex Torres  ·  📅 Due 2d
+
+📝  *PLAT-999*  Update runbook for cache invalidation
+⚪ Open  ·  🟡 Medium  ·  👤 Unassigned  ·  📅 Mar 1
+
+─────────────────────────────────────────────────────────────
 🕐  Mar 2, 2026 at 09:00 UTC  ·  Open Jira
 ```
 
-Status emojis: 🔵 In Progress · 🟡 In Review · ✅ Done · 🔴 Blocked · ⚪ Open
-Priority emojis: 🚨 Critical/Blocker · 🔴 High · 🟡 Medium · 🔵 Low
-Type emojis: 🐛 Bug · 📖 Story · ✅ Task · ⚡ Epic
+### Date display
+
+Due dates and custom date fields render as relative labels:
+
+| Value | Meaning |
+|-------|---------|
+| `5d` | due in 5 days |
+| `3h` | due today, ~3 hours to midnight in the configured timezone |
+| `Mar 1` | past due (displayed as a fixed date so overdue items stand out) |
+
+### Emoji reference
+
+| Category | Emoji → Status |
+|----------|---------------|
+| Status | 🔵 In Progress · 🟡 In Review · ✅ Done · 🔴 Blocked · ⚪ Open/To Do |
+| Priority | 🚨 Blocker/Critical · 🔴 High · 🟡 Medium · 🔵 Low · ⚪ Lowest |
+| Type | 🐛 Bug · 📖 Story · ☑️ Task · ⚡ Epic · 🔹 Sub-task · ✨ Feature |
+
+All emoji mappings are overridable per-workspace via the `emojis:` section in `config/queries.yaml`.
 
 ---
 
