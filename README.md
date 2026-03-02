@@ -1,6 +1,9 @@
 # jql-to-slack-notifier
 
 [![CI](https://github.com/johntdyer/jql-to-slack-notifier/actions/workflows/ci.yml/badge.svg)](https://github.com/johntdyer/jql-to-slack-notifier/actions/workflows/ci.yml)
+[![Coverage](https://codecov.io/gh/johntdyer/jql-to-slack-notifier/graph/badge.svg)](https://codecov.io/gh/johntdyer/jql-to-slack-notifier)
+[![Python](https://img.shields.io/badge/python-3.11_%7C_3.12_%7C_3.13-blue)](https://www.python.org)
+[![Pylint](https://img.shields.io/badge/pylint-10%2F10-brightgreen)](https://pylint.readthedocs.io)
 
 Runs JQL searches against Jira Cloud and posts pretty-formatted messages to Slack using Block Kit.
 
