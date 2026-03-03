@@ -4,7 +4,7 @@ PIP    := $(VENV)/bin/pip
 
 .DEFAULT_GOAL := help
 
-# ── Setup ─────────────────────────────────────────────────────────────────────
+# -- Setup --------------------------------------------------------------------
 
 .PHONY: setup
 setup: $(VENV)/bin/activate .env ## Create venv and install dependencies
@@ -18,10 +18,10 @@ $(VENV)/bin/activate: requirements.txt
 .env:
 	@if [ ! -f .env ]; then \
 		cp .env.example .env; \
-		echo "Created .env from .env.example — fill in your credentials before running."; \
+		echo "Created .env from .env.example -- fill in your credentials before running."; \
 	fi
 
-# ── Run ───────────────────────────────────────────────────────────────────────
+# -- Run ----------------------------------------------------------------------
 
 .PHONY: run
 run: $(VENV)/bin/activate ## Run all configured queries and post to Slack
@@ -40,7 +40,7 @@ schedule: $(VENV)/bin/activate ## Start the scheduler daemon
 query: $(VENV)/bin/activate ## Run a single query by name (usage: make query QUERY="My Query Name")
 	$(PYTHON) main.py run --query "$(QUERY)"
 
-# ── Lint / Test ───────────────────────────────────────────────────────────────
+# -- Lint / Test --------------------------------------------------------------
 
 .PHONY: lint
 lint: $(VENV)/bin/activate ## Run pylint on source and main
@@ -51,16 +51,16 @@ test: $(VENV)/bin/activate ## Run the test suite
 	$(VENV)/bin/pytest tests/ -v
 
 .PHONY: pre-commit
-pre-commit: $(VENV)/bin/activate ## Install pre-commit hooks into .git
-	$(VENV)/bin/pre-commit install
+pre-commit: ## Install prek hooks into .git (requires prek: https://prek.j178.dev/installation/)
+	prek install
 
-# ── Cleanup ───────────────────────────────────────────────────────────────────
+# -- Cleanup ------------------------------------------------------------------
 
 .PHONY: clean
 clean: ## Remove the virtual environment
 	rm -rf $(VENV)
 
-# ── Help ──────────────────────────────────────────────────────────────────────
+# -- Help ---------------------------------------------------------------------
 
 .PHONY: help
 help: ## Show this help

@@ -50,7 +50,7 @@ _KNOWN_FIELDS = {"key", "summary", "assignee", "status", "priority", "reporter",
 def _format_date_relative(iso: str, tz_name: str = "UTC") -> str:
     """Return a human-friendly relative label for a date string.
 
-    Future (≥2 days): "Xd"
+    Future (>=2 days): "Xd"
     Today (0 days):   "Xh" until midnight in the configured timezone
     Past:             "Mar 5" style (so overdue dates are visually distinct)
     """

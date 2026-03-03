@@ -370,6 +370,99 @@ Tests cover all four modules and make no real network calls -- Jira and Slack AP
 
 ---
 
+## Development
+
+### Initial setup
+
+After cloning the repo, run these two commands once:
+
+```bash
+make setup        # creates .venv, installs all deps, copies .env.example -> .env
+make pre-commit   # installs pre-commit hooks into .git/hooks
+```
+
+`make setup` is also re-entrant -- if `requirements.txt` changes, re-running it will upgrade the
+venv without touching the hooks or `.env`.
+
+### Make targets
+
+```text
+make setup        create .venv and install dependencies
+make list         print all configured query names
+make run          run all queries and post to Slack
+make query        run one query (QUERY="Name" required)
+make schedule     start the APScheduler daemon
+make lint         run pylint (must stay at 10/10)
+make test         run pytest
+make pre-commit   install pre-commit hooks into .git
+make clean        delete .venv
+make help         show this list
+```
+
+Run `make help` at any time to see the same list with descriptions in your terminal.
+
+### Pre-commit hooks
+
+This project uses [prek](https://prek.j178.dev) -- a fast, Rust-based drop-in replacement for
+the Python pre-commit framework. It reads the same `.pre-commit-config.yaml` format but runs
+significantly faster.
+
+**Install prek first** (it is a system tool, not a Python package):
+
+```bash
+# macOS / Linux
+brew install prek
+
+# or via cargo
+cargo install --locked prek
+
+# or via pip / uv
+pip install prek
+uv tool install prek
+```
+
+See [prek.j178.dev/installation](https://prek.j178.dev/installation/) for all installation
+methods (npm, nix, conda, winget, etc.).
+
+After installing prek, wire it into the repo once:
+
+```bash
+make pre-commit   # runs: prek install
+```
+
+Two checks run automatically on every `git commit`:
+
+| Hook | What it checks |
+|------|---------------|
+| gitleaks | Scans staged content for secrets (API tokens, bot tokens, etc.) |
+| pylint | Lints any changed `.py` files in `src/` or `main.py` against `.pylintrc` |
+
+If a hook fails the commit is blocked. Fix the reported issue and re-stage before committing again.
+
+To run the hooks manually against all files without making a commit:
+
+```bash
+prek run --all-files
+```
+
+To skip hooks in an emergency (not recommended):
+
+```bash
+git commit --no-verify -m "message"
+```
+
+### Lint and test
+
+```bash
+make lint    # pylint src/ main.py -- must score 10.00/10
+make test    # pytest tests/ -v
+```
+
+Pylint configuration is in [.pylintrc](.pylintrc). The score must stay at 10/10; CI will fail
+otherwise. All tests make no real network calls -- Jira and Slack are fully mocked.
+
+---
+
 ## Project structure
 
 ```

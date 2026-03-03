@@ -77,7 +77,7 @@ def run_query(
         emoji_config=effective_emoji_config,
         tz_name=tz,
     )
-    fallback_text = f"{name} — {len(issues)} issue(s) found"
+    fallback_text = f"{name} -- {len(issues)} issue(s) found"
     slack.post_message(channel=channel, blocks=blocks, text=fallback_text)
     print(f"  Posted to {channel}")
 

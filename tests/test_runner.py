@@ -40,7 +40,7 @@ queries:
 
 class TestLoadConfig:
     def test_slack_none_in_yaml_does_not_raise(self, monkeypatch):
-        """slack: with only a comment parses as None in PyYAML — must not TypeError."""
+        """slack: with only a comment parses as None in PyYAML -- must not TypeError."""
         monkeypatch.setenv("JIRA_API_TOKEN", "jira-secret")
         monkeypatch.setenv("SLACK_BOT_TOKEN", "slack-secret")
         with patch("builtins.open", mock_open(read_data=NULL_SLACK_YAML)):
@@ -125,7 +125,7 @@ class TestRunNamed:
             mock_slack = MagicMock()
             mock_jira.search.return_value = []
             mock_clients.return_value = (mock_jira, mock_slack)
-            run_named(config, "my query")  # lowercase — should not raise
+            run_named(config, "my query")  # lowercase -- should not raise
             mock_jira.search.assert_called_once()
 
     def test_posts_to_correct_channel(self):
