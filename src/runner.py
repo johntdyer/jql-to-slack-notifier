@@ -32,6 +32,20 @@ def _make_clients(config: dict) -> tuple[JiraClient, SlackClient]:
     return jira, slack
 
 
+def _merge_emoji_config(global_cfg: dict | None, query_cfg: dict | None) -> dict | None:
+    if not query_cfg:
+        return global_cfg
+    if not global_cfg:
+        return query_cfg
+    merged = dict(global_cfg)
+    for key in ("status", "priority", "type"):
+        if key in query_cfg:
+            merged[key] = {**(global_cfg.get(key) or {}), **query_cfg[key]}
+    if "header" in query_cfg:
+        merged["header"] = query_cfg["header"]
+    return merged
+
+
 def run_query(
     query_cfg: dict,
     jira: JiraClient,
@@ -47,6 +61,8 @@ def run_query(
     fields = query_cfg.get("fields", ["key", "summary", "assignee", "status"])
     # Per-query timezone overrides the global default
     tz = query_cfg.get("timezone", timezone)
+    # Per-query emojis are merged on top of global emojis
+    effective_emoji_config = _merge_emoji_config(emoji_config, query_cfg.get("emojis"))
 
     field_map = query_cfg.get("field_map") or {}
     print(f"  Running: {name}")
@@ -58,7 +74,7 @@ def run_query(
         issues=issues,
         base_url=base_url,
         fields=fields,
-        emoji_config=emoji_config,
+        emoji_config=effective_emoji_config,
         tz_name=tz,
     )
     fallback_text = f"{name} — {len(issues)} issue(s) found"
