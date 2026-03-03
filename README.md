@@ -64,9 +64,9 @@ Built-in defaults. All mappings are case-insensitive and can be overridden in `c
 | | `:large_yellow_circle:` |🟡| Medium |
 | | `:large_blue_circle:` | 🔵|Low |
 | | `:white_circle:` | ⚪| Lowest, Trivial |
-| Type | `:bug:` | 🐛 ug |
-| | `:book:` | S📖| tory |
-| | `:ballot_box_with_check:` | ☑️ | task |
+| Type | `:bug:` | 🐛 | Bug |
+| | `:book:` | 📖| Story |
+| | `:ballot_box_with_check:` | ☑️ | Task |
 | | `:zap:` | ⚡ | Epic |
 | | `:small_blue_diamond:` | 🔹 | Sub-task |
 | | `:sparkles:` | ✨| Improvement, Feature |
