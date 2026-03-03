@@ -1,0 +1,52 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/johntdyer/jql-to-slack-notifier
+  pullPolicy: IfNotPresent
+  # Overrides the image tag. Defaults to the chart's appVersion.
+  tag: ""
+
+# Reference an existing Kubernetes secret with JIRA_API_TOKEN and SLACK_BOT_TOKEN.
+# If set, the `secrets` block below is ignored.
+existingSecret: ""
+
+# Inline secret values (used when existingSecret is empty).
+# These are stored in a Kubernetes Secret and injected as env vars.
+secrets:
+  jiraApiToken: ""
+  slackBotToken: ""
+
+# Full contents of config/queries.yaml, rendered into a ConfigMap.
+# Paste your queries.yaml here (without jira.api_token or slack.bot_token —
+# those come from the secret above).
+config: |
+  jira:
+    base_url: https://yourcompany.atlassian.net
+    email: user@example.com
+
+  slack: {}
+
+  timezone: UTC
+
+  queries: []
+
+resources: {}
+  # limits:
+  #   cpu: 200m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 64Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+podAnnotations: {}
+podSecurityContext: {}
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false

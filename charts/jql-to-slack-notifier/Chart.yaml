@@ -1,0 +1,14 @@
+apiVersion: v2
+name: jql-to-slack-notifier
+description: Runs JQL searches against Jira Cloud and posts results to Slack channels
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - jira
+  - slack
+  - notifications
+  - jql
+maintainers:
+  - name: johntdyer
+    url: https://github.com/johntdyer
