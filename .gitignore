@@ -19,3 +19,4 @@ tests/__pycache__/
 config/queries.yaml.example
 config/my-queries.yaml
 .claude/settings.local.json
+temp/
