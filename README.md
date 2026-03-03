@@ -14,27 +14,27 @@ Runs JQL searches against Jira Cloud and posts pretty-formatted messages to Slac
 Each query produces a Slack message like this:
 
 ```
-+-------------------------------------------------------------+
-|  :bell:  Items Due This Week                                |
-+-------------------------------------------------------------+
-:mag:  *4 issues* matched
+┌─────────────────────────────────────────────────────────────┐
+│  🔔  Items Due This Week                                    │
+└─────────────────────────────────────────────────────────────┘
+🔍  *4 issues* matched
 
--------------------------------------------------------------
+─────────────────────────────────────────────────────────────
 
-:memo:  *PLAT-1042*  Migrate auth service to OAuth 2.0
-:large_blue_circle: In Progress  |  :large_yellow_circle: Medium  |  :bust_in_silhouette: Jane Smith  |  :calendar: Due 3d
+📝  *PLAT-1042*  Migrate auth service to OAuth 2.0
+🔵 In Progress  ·  🟡 Medium  ·  👤 Jane Smith  ·  📅 Due 3d
 
-:fire:  *CR-88*  Emergency DB failover procedure
-:white_circle: Open  |  :rotating_light: P0  |  :bust_in_silhouette: Unassigned  |  :calendar: Due 5h
+🔥  *CR-88*  Emergency DB failover procedure
+⚪ Open  ·  🚨 P0  ·  👤 Unassigned  ·  📅 Due 5h
 
-:fire:  *CR-91*  Rotate prod API keys after breach
-:arrows_counterclockwise: In Progress  |  :red_circle: P1  |  :bust_in_silhouette: Alex Torres  |  :calendar: Due 2d
+🔥  *CR-91*  Rotate prod API keys after breach
+🔄 In Progress  ·  🔴 P1  ·  👤 Alex Torres  ·  📅 Due 2d
 
-:memo:  *PLAT-999*  Update runbook for cache invalidation
-:white_circle: Open  |  :large_yellow_circle: Medium  |  :bust_in_silhouette: Unassigned  |  :calendar: Mar 1
+📝  *PLAT-999*  Update runbook for cache invalidation
+⚪ Open  ·  🟡 Medium  ·  👤 Unassigned  ·  📅 Mar 1
 
--------------------------------------------------------------
-:clock3:  Mar 2, 2026 at 09:00 UTC  |  Open Jira
+─────────────────────────────────────────────────────────────
+🕐  Mar 2, 2026 at 09:00 UTC  ·  Open Jira
 ```
 
 ### Date display
@@ -51,26 +51,25 @@ Due dates and custom date fields render as relative labels:
 
 Built-in defaults. All mappings are case-insensitive and can be overridden in `config/queries.yaml`.
 
-| Category | Slack emoji | Status / value |
+| Category | Slack emoji | Slack Icon | Status / value |
 |----------|-------------|----------------|
-| Status | `:white_circle:` | Open, To Do, Backlog |
-| | `:large_blue_circle:` | In Progress |
-| | `:large_yellow_circle:` | In Review, Review |
-| | `:red_circle:` | Blocked |
-| | `:white_check_mark:` | Done, Closed, Resolved |
-| | `:x:` | Cancelled, Won't Fix |
-| Priority | `:rotating_light:` | Blocker, Critical |
-| | `:red_circle:` | High |
-| | `:large_yellow_circle:` | Medium |
-| | `:large_blue_circle:` | Low |
-| | `:white_circle:` | Lowest, Trivial |
-| Type | `:bug:` | Bug |
-| | `:book:` | Story |
-| | `:ballot_box_with_check:` | Task |
-| | `:zap:` | Epic |
-| | `:small_blue_diamond:` | Sub-task |
-| | `:sparkles:` | Improvement, Feature |
-
+| Status | `:white_circle:` | ⚪ |Open, To Do, Backlog |
+| | `:large_blue_circle:` |🔵| In Progress |
+| | `:large_yellow_circle:` | 🟡 |In Review, Review |
+| | `:red_circle:` | 🔴 | Blocked |
+| | `:white_check_mark:` |✅ | Done, Closed, Resolved |
+| | `:x:` | ❌ | Cancelled, Won't Fix |
+| Priority | `:rotating_light:` | 🚨|Blocker, Critical |
+| | `:red_circle:` | 🔴|High |
+| | `:large_yellow_circle:` |🟡| Medium |
+| | `:large_blue_circle:` | 🔵|Low |
+| | `:white_circle:` | ⚪| Lowest, Trivial |
+| Type | `:bug:` | 🐛 ug |
+| | `:book:` | S📖| tory |
+| | `:ballot_box_with_check:` | ☑️ | task |
+| | `:zap:` | ⚡ | Epic |
+| | `:small_blue_diamond:` | 🔹 | Sub-task |
+| | `:sparkles:` | ✨| Improvement, Feature |
 ---
 
 ## Setup
