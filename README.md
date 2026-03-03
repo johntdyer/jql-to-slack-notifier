@@ -13,7 +13,7 @@ Runs JQL searches against Jira Cloud and posts pretty-formatted messages to Slac
 
 Each query produces a Slack message like this:
 
-```
+```plain
 ┌─────────────────────────────────────────────────────────────┐
 │  🔔  Items Due This Week                                    │
 └─────────────────────────────────────────────────────────────┘
@@ -464,7 +464,7 @@ otherwise. All tests make no real network calls -- Jira and Slack are fully mock
 
 ## Project structure
 
-```
+```plane
 jql-to-slack-notifier/
   charts/
     jql-to-slack-notifier/     Helm chart (published to GHCR OCI on release)
