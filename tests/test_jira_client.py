@@ -85,7 +85,7 @@ class TestJiraClientSearch:
 
     def test_unassigned_issue(self):
         client = _make_client()
-        raw = [_raw_issue()]  # no assignee key → None
+        raw = [_raw_issue()]  # no assignee key -> None
         with patch.object(client.session, "get", return_value=_api_response(raw)):
             result = client.search("project = X", ["key", "assignee"])
             assert result[0]["assignee"] == "Unassigned"

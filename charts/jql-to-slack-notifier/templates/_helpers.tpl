@@ -35,14 +35,14 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-The image tag — use .Values.image.tag if set, otherwise fall back to appVersion.
+The image tag -- use .Values.image.tag if set, otherwise fall back to appVersion.
 */}}
 {{- define "jql-to-slack-notifier.imageTag" -}}
 {{- .Values.image.tag | default .Chart.AppVersion }}
 {{- end }}
 
 {{/*
-Secret name — use existingSecret if provided, otherwise the fullname of this release.
+Secret name -- use existingSecret if provided, otherwise the fullname of this release.
 */}}
 {{- define "jql-to-slack-notifier.secretName" -}}
 {{- .Values.existingSecret | default (include "jql-to-slack-notifier.fullname" .) }}

@@ -1,5 +1,5 @@
-# Bot icon: convert icons/bot-icon.svg → 512×512 PNG, then upload at:
-#   api.slack.com/apps → your app → Basic Information → Display Information
+# Bot icon: convert icons/bot-icon.svg -> 512x512 PNG, then upload at:
+#   api.slack.com/apps -> your app -> Basic Information -> Display Information
 display_information:
   name: JQL Slack Notifications
   description: Posts Jira JQL search results to Slack channels

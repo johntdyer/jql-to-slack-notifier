@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-JQL → Slack notification tool.
+JQL -> Slack notification tool.
 
 Commands:
   run                     Run all configured queries once
@@ -9,9 +9,9 @@ Commands:
   schedule                Start the scheduler daemon (runs queries at their configured times)
 
 Schedule field uses standard 5-field cron syntax:
-  "0 8 * * 1-5"   →  08:00 Monday–Friday
-  "30 9 * * *"    →  09:30 every day
-  "0 8,17 * * *"  →  08:00 and 17:00 every day
+  "0 8 * * 1-5"   ->  08:00 Monday-Friday
+  "30 9 * * *"    ->  09:30 every day
+  "0 8,17 * * *"  ->  08:00 and 17:00 every day
 Timezone is taken from the top-level `timezone:` key in config (default: UTC).
 """
 
@@ -45,7 +45,7 @@ def cmd_list(args) -> None:
         print(
             f"{q['name']:<35} "
             f"{q.get('channel', ''):<20} "
-            f"{q.get('schedule', '—'):<10} "
+            f"{q.get('schedule', '-'):<10} "
             f"{q.get('max_results', 50)}"
         )
 
@@ -79,7 +79,7 @@ def cmd_schedule(args) -> None:
 
         trigger = CronTrigger.from_crontab(cron_expr, timezone=job_tz)
         scheduler.add_job(make_job(q), trigger, name=q["name"])
-        print(f"Scheduled: {q['name']} — {cron_expr} ({job_tz})")
+        print(f"Scheduled: {q['name']} -- {cron_expr} ({job_tz})")
 
     if not scheduler.get_jobs():
         print("No queries have a 'schedule' field set. Nothing to schedule.")

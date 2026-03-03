@@ -11,10 +11,11 @@ __pycache__/
 .pytest_cache/
 .coverage
 htmlcov/
-
+tests/__pycache__/
 # Editor
 .DS_Store
 
 
 config/queries.yaml.example
 config/my-queries.yaml
+.claude/settings.local.json

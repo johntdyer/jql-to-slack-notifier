@@ -48,14 +48,14 @@ queries:
       ORDER BY due ASC
     channel: "#dyer-sandbox"
     max_results: 15
-    schedule: "0 8 * * 1-5"  # 8:00 AM Mon–Fri in the configured timezone
+    schedule: "0 8 * * 1-5"  # 8:00 AM Mon-Fri in the configured timezone
     fields:
       - key
       - summary
       - assignee
       - status
       - 'Target end'
-    # field_map: maps display name → Jira field ID for custom fields
+    # field_map: maps display name -> Jira field ID for custom fields
     # Run with --debug to see raw field keys in the API response, then fill in below
     field_map:
       'Target end': customfield_10102  # replace XXXXX with your actual field ID
@@ -68,7 +68,7 @@ queries:
 
     channel: "#dyer-sandbox"
     max_results: 20
-    schedule: "0 9 * * 1-5"  # 9:00 AM Mon–Fri in the configured timezone
+    schedule: "0 9 * * 1-5"  # 9:00 AM Mon-Fri in the configured timezone
     fields:
       - key
       - summary

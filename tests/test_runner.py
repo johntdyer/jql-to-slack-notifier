@@ -1,7 +1,7 @@
 import os
 import pytest
 from unittest.mock import MagicMock, patch, mock_open
-from src.runner import load_config, run_named
+from src.runner import load_config, run_named, _merge_emoji_config
 
 
 MINIMAL_YAML = """
@@ -38,9 +38,91 @@ queries:
 """
 
 
+class TestMergeEmojiConfig:
+    def test_both_none_returns_none(self):
+        assert _merge_emoji_config(None, None) is None
+
+    def test_empty_query_returns_global(self):
+        global_cfg = {"header": ":bell:"}
+        assert _merge_emoji_config(global_cfg, None) is global_cfg
+
+    def test_empty_global_returns_query(self):
+        query_cfg = {"header": ":fire:"}
+        assert _merge_emoji_config(None, query_cfg) is query_cfg
+
+    def test_empty_dict_query_treated_as_absent(self):
+        global_cfg = {"header": ":bell:"}
+        assert _merge_emoji_config(global_cfg, {}) is global_cfg
+
+    def test_query_header_overrides_global(self):
+        result = _merge_emoji_config({"header": ":bell:"}, {"header": ":rotating_light:"})
+        assert result["header"] == ":rotating_light:"
+
+    def test_global_header_preserved_when_absent_from_query(self):
+        result = _merge_emoji_config({"header": ":bell:"}, {"status": {"open": ":white_circle:"}})
+        assert result["header"] == ":bell:"
+
+    def test_status_query_overrides_matching_global_entry(self):
+        global_cfg = {"status": {"open": ":white_circle:", "done": ":white_check_mark:"}}
+        query_cfg = {"status": {"open": ":large_green_circle:"}}
+        result = _merge_emoji_config(global_cfg, query_cfg)
+        assert result["status"]["open"] == ":large_green_circle:"
+        assert result["status"]["done"] == ":white_check_mark:"
+
+    def test_status_query_adds_new_entry(self):
+        global_cfg = {"status": {"open": ":white_circle:"}}
+        query_cfg = {"status": {"investigating": ":mag:"}}
+        result = _merge_emoji_config(global_cfg, query_cfg)
+        assert result["status"]["open"] == ":white_circle:"
+        assert result["status"]["investigating"] == ":mag:"
+
+    def test_priority_query_overrides_matching_global_entry(self):
+        global_cfg = {"priority": {"high": ":red_circle:", "medium": ":large_yellow_circle:"}}
+        query_cfg = {"priority": {"high": ":fire:"}}
+        result = _merge_emoji_config(global_cfg, query_cfg)
+        assert result["priority"]["high"] == ":fire:"
+        assert result["priority"]["medium"] == ":large_yellow_circle:"
+
+    def test_type_query_overrides_matching_global_entry(self):
+        global_cfg = {"type": {"bug": ":bug:", "task": ":ballot_box_with_check:"}}
+        query_cfg = {"type": {"bug": ":lady_beetle:"}}
+        result = _merge_emoji_config(global_cfg, query_cfg)
+        assert result["type"]["bug"] == ":lady_beetle:"
+        assert result["type"]["task"] == ":ballot_box_with_check:"
+
+    def test_global_missing_category_filled_from_query(self):
+        global_cfg = {"header": ":bell:"}
+        query_cfg = {"status": {"urgent": ":rotating_light:"}}
+        result = _merge_emoji_config(global_cfg, query_cfg)
+        assert result["status"] == {"urgent": ":rotating_light:"}
+
+    def test_all_three_categories_merged_simultaneously(self):
+        global_cfg = {
+            "status": {"open": ":white_circle:"},
+            "priority": {"high": ":red_circle:"},
+            "type": {"bug": ":bug:"},
+        }
+        query_cfg = {
+            "status": {"open": ":large_green_circle:"},
+            "priority": {"high": ":fire:"},
+            "type": {"bug": ":lady_beetle:"},
+        }
+        result = _merge_emoji_config(global_cfg, query_cfg)
+        assert result["status"]["open"] == ":large_green_circle:"
+        assert result["priority"]["high"] == ":fire:"
+        assert result["type"]["bug"] == ":lady_beetle:"
+
+    def test_does_not_mutate_global_config(self):
+        global_cfg = {"header": ":bell:", "status": {"open": ":white_circle:"}}
+        query_cfg = {"header": ":fire:", "status": {"open": ":red_circle:"}}
+        _merge_emoji_config(global_cfg, query_cfg)
+        assert global_cfg["header"] == ":bell:"
+        assert global_cfg["status"]["open"] == ":white_circle:"
+
+
 class TestLoadConfig:
     def test_slack_none_in_yaml_does_not_raise(self, monkeypatch):
-        """slack: with only a comment parses as None in PyYAML — must not TypeError."""
+        """slack: with only a comment parses as None in PyYAML -- must not TypeError."""
         monkeypatch.setenv("JIRA_API_TOKEN", "jira-secret")
         monkeypatch.setenv("SLACK_BOT_TOKEN", "slack-secret")
         with patch("builtins.open", mock_open(read_data=NULL_SLACK_YAML)):
@@ -125,7 +207,7 @@ class TestRunNamed:
             mock_slack = MagicMock()
             mock_jira.search.return_value = []
             mock_clients.return_value = (mock_jira, mock_slack)
-            run_named(config, "my query")  # lowercase — should not raise
+            run_named(config, "my query")  # lowercase -- should not raise
             mock_jira.search.assert_called_once()
 
     def test_posts_to_correct_channel(self):

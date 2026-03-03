@@ -17,7 +17,7 @@ secrets:
   slackBotToken: ""
 
 # Full contents of config/queries.yaml, rendered into a ConfigMap.
-# Paste your queries.yaml here (without jira.api_token or slack.bot_token —
+# Paste your queries.yaml here (without jira.api_token or slack.bot_token --
 # those come from the secret above).
 config: |
   jira:

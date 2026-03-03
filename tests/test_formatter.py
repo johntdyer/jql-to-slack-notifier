@@ -16,7 +16,7 @@ def _issue(**kwargs):
     return {**defaults, **kwargs}
 
 
-# ── Emoji helpers ─────────────────────────────────────────────────────────────
+# -- Emoji helpers ------------------------------------------------------------
 
 class TestStatusEmoji:
     def test_in_progress(self):
@@ -81,7 +81,7 @@ class TestTypeEmoji:
         assert _type_emoji("Unknown") == ":page_facing_up:"
 
 
-# ── build_blocks ──────────────────────────────────────────────────────────────
+# -- build_blocks -------------------------------------------------------------
 
 class TestBuildBlocks:
     def test_no_issues_returns_all_clear(self):
@@ -170,7 +170,7 @@ class TestBuildBlocks:
         assert ":red_circle:" not in text
 
 
-# ── Emoji config overrides ─────────────────────────────────────────────────────
+# -- Emoji config overrides ---------------------------------------------------
 
 class TestEmojiConfigOverrides:
     def test_status_override_replaces_default(self):

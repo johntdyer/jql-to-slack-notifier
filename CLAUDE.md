@@ -84,6 +84,10 @@ queries:
     max_results: 20
     schedule: "0 9 * * 1-5"    # 5-field cron, optional
     timezone: America/New_York  # per-query override, optional
+    emojis:                     # per-query override, merged on top of global emojis
+      header: ":rotating_light:"
+      status:
+        "Investigating": ":mag:"
     fields:
       - key
       - summary
