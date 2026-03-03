@@ -52,7 +52,7 @@ Due dates and custom date fields render as relative labels:
 Built-in defaults. All mappings are case-insensitive and can be overridden in `config/queries.yaml`.
 
 | Category | Slack emoji | Slack Icon | Status / value |
-|----------|-------------|----------------|
+|----------|-------------|----------------|----------------|
 | Status | `:white_circle:` | ⚪ |Open, To Do, Backlog |
 | | `:large_blue_circle:` |🔵| In Progress |
 | | `:large_yellow_circle:` | 🟡 |In Review, Review |
