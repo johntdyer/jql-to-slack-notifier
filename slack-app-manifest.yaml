@@ -9,13 +9,20 @@ features:
   bot_user:
     display_name: JQL Notifications
     always_online: false
+  slash_commands:
+    - command: /runjql
+      description: Run Jira queries and show results
+      usage_hint: "list | run <query-name>"
+      should_escape: false
+
 oauth_config:
   scopes:
     bot:
       - chat:write        # post messages to channels the bot is a member of
       - chat:write.public # post to public channels without needing to join first
+      - commands          # required for slash commands
 
 settings:
   org_deploy_enabled: false
-  socket_mode_enabled: false
+  socket_mode_enabled: true
   token_rotation_enabled: false

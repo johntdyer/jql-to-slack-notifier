@@ -35,6 +35,10 @@ list: $(VENV)/bin/activate ## List all configured queries
 schedule: $(VENV)/bin/activate ## Start the scheduler daemon
 	$(PYTHON) main.py schedule
 
+.PHONY: serve
+serve: $(VENV)/bin/activate ## Start the Socket Mode slash-command server
+	$(PYTHON) main.py serve
+
 # Pass QUERY="name" to target a specific query: make query QUERY="Open CDS CR's"
 .PHONY: query
 query: $(VENV)/bin/activate ## Run a single query by name (usage: make query QUERY="My Query Name")
