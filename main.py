@@ -17,12 +17,14 @@ Timezone is taken from the top-level `timezone:` key in config (default: UTC).
 
 import argparse
 import logging
+import os
 import sys
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from src.runner import load_config, run_all, run_named
+from src.slash_handler import start_socket_mode
 
 
 def cmd_run(args) -> None:
@@ -48,6 +50,11 @@ def cmd_list(args) -> None:
             f"{q.get('schedule', '-'):<10} "
             f"{q.get('max_results', 50)}"
         )
+
+
+def cmd_serve(args) -> None:
+    config = load_config(args.config)
+    start_socket_mode(config)
 
 
 def cmd_schedule(args) -> None:
@@ -98,9 +105,10 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
+
     parser.add_argument(
         "--config",
-        default="config/queries.yaml",
+        default=os.getenv('QUERY_CONFIG_FILE', "config/queries.yaml"),
         metavar="PATH",
         help="Path to config file (default: config/queries.yaml)",
     )
@@ -125,6 +133,9 @@ def main() -> None:
     # schedule
     subparsers.add_parser("schedule", help="Start the scheduler daemon")
 
+    # serve
+    subparsers.add_parser("serve", help="Start Socket Mode slash-command server")
+
     args = parser.parse_args()
 
     if args.debug:
@@ -139,6 +150,8 @@ def main() -> None:
         cmd_list(args)
     elif args.command == "schedule":
         cmd_schedule(args)
+    elif args.command == "serve":
+        cmd_serve(args)
     else:
         parser.print_help()
         sys.exit(1)

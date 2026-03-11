@@ -39,6 +39,7 @@ emojis:
 
 queries:
   - name: Items Due this week
+    description: "Jira items w/ a target end date of today"
     jql: >-
       project = PLAT AND
       'Delivery Area/Team' in cascadeOption('platform', 'Services') AND
@@ -61,6 +62,7 @@ queries:
       'Target end': customfield_10102  # replace XXXXX with your actual field ID
 
   - name: Open CDS CR's
+    description: "Jira items w/ a target end date of today"
     jql: >-
       project=CR AND
       'Delivery Area/Team' IN cascadeOption('platform','Services') AND
