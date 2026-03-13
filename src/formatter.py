@@ -177,20 +177,33 @@ def _issue_block(
     type_icon = f"{_type_emoji(issuetype, type_overrides)}  " if issuetype else ""
     line1 = f"{type_icon}*<{url}|{key}>*  {summary}"
 
-    meta: list[str] = []
+    # Build labeled field items for two-column grid display
+    field_items: list[dict] = []
     if "status" in fields:
         status = issue.get("status", "Unknown")
-        meta.append(f"{_status_emoji(status, status_overrides)} {status}")
+        field_items.append({
+            "type": "mrkdwn",
+            "text": f"*Status:*\n{_status_emoji(status, status_overrides)} {status}",
+        })
     if "priority" in fields:
         priority = issue.get("priority", "")
         if priority:
-            meta.append(f"{_priority_emoji(priority, priority_overrides)} {priority}")
+            field_items.append({
+                "type": "mrkdwn",
+                "text": f"*Priority:*\n{_priority_emoji(priority, priority_overrides)} {priority}",
+            })
     if "assignee" in fields:
-        meta.append(f":bust_in_silhouette: {issue.get('assignee', 'Unassigned')}")
+        field_items.append({
+            "type": "mrkdwn",
+            "text": f"*Assignee:*\n{issue.get('assignee', 'Unassigned')}",
+        })
     if "duedate" in fields:
         val = issue.get("duedate", "")
         if val:
-            meta.append(f":calendar: Due {_format_date_relative(val, tz_name)}")
+            field_items.append({
+                "type": "mrkdwn",
+                "text": f"*Due:*\n:calendar: {_format_date_relative(val, tz_name)}",
+            })
     for field_name in fields:
         if field_name in _KNOWN_FIELDS or field_name == "duedate":
             continue
@@ -198,15 +211,17 @@ def _issue_block(
         if not val:
             continue
         if _ISO_DATE.match(str(val)):
-            meta.append(f":calendar: {field_name}: {_format_date_relative(str(val), tz_name)}")
+            field_items.append({
+                "type": "mrkdwn",
+                "text": f"*{field_name}:*\n:calendar: {_format_date_relative(str(val), tz_name)}",
+            })
         else:
-            meta.append(str(val))
+            field_items.append({"type": "mrkdwn", "text": f"*{field_name}:*\n{val}"})
 
-    text = line1
-    if meta:
-        text += "\n" + "  ·  ".join(meta)
-
-    return {"type": "section", "text": {"type": "mrkdwn", "text": text}}
+    block: dict = {"type": "section", "text": {"type": "mrkdwn", "text": line1}}
+    if field_items:
+        block["fields"] = field_items[:10]  # Slack max 10 fields per section
+    return block
 
 
 def _footer(base_url: str = "") -> dict:

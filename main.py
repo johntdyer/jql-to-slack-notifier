@@ -115,6 +115,7 @@ def main() -> None:
     parser.add_argument(
         "--debug",
         action="store_true",
+        default=os.getenv('JQL_DEBUG', "false").lower() == "true",
         help="Enable debug logging (shows Jira HTTP requests)",
     )
     subparsers = parser.add_subparsers(dest="command")
@@ -143,6 +144,8 @@ def main() -> None:
             level=logging.DEBUG,
             format="%(asctime)s %(name)s %(levelname)s %(message)s",
         )
+        logging.debug("Debug logging enabled")
+
 
     if args.command == "run":
         cmd_run(args)

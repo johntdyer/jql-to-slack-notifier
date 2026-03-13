@@ -18,11 +18,16 @@ class JiraClient:
         fields: list[str],
         max_results: int = 50,
         field_map: dict | None = None,
+        extra_api_fields: list[str] | None = None,
     ) -> list[dict]:
         # field_map: {display_name: jira_field_id} for custom fields
         # Replace display names with their Jira field IDs in the API request
+        # extra_api_fields: additional Jira field IDs to request (e.g. "parent") that are
+        # not part of the display fields list and are not passed through normalization
         fm = field_map or {}
         api_fields = [fm.get(f, f) for f in fields]
+        if extra_api_fields:
+            api_fields = api_fields + [f for f in extra_api_fields if f not in api_fields]
 
         url = f"{self.base_url}/rest/api/3/search/jql"
         params = {
@@ -70,9 +75,11 @@ class JiraClient:
             reporter = f.get("reporter")
             result["reporter"] = reporter["displayName"] if reporter else "Unknown"
 
-        if "issuetype" in fields:
-            issuetype = f.get("issuetype", {})
-            result["issuetype"] = issuetype.get("name", "Unknown")
+        # Extract issuetype whenever it's present in the response (not just when explicitly
+        # requested as a display field) so parent-field enrichment can check the issue type.
+        issuetype_raw = f.get("issuetype")
+        if issuetype_raw is not None or "issuetype" in fields:
+            result["issuetype"] = (issuetype_raw or {}).get("name", "Unknown")
 
         if "duedate" in fields:
             result["duedate"] = f.get("duedate") or ""
@@ -82,4 +89,19 @@ class JiraClient:
             if display_name in fields:
                 result[display_name] = f.get(field_id) or ""
 
+        # Always extract parent key when present (for subtask parent-field enrichment)
+        parent = f.get("parent")
+        if parent:
+            result["parent_key"] = parent.get("key", "")
+
         return result
+
+    def get_issue(self, key: str, fields: list[str], field_map: dict | None = None) -> dict:
+        fm = field_map or {}
+        api_fields = [fm.get(f, f) for f in fields]
+        url = f"{self.base_url}/rest/api/3/issue/{key}"
+        params = {"fields": ",".join(api_fields)}
+        logger.debug("GET %s | fields=%s", url, params["fields"])
+        response = self.session.get(url, params=params, auth=self.auth)
+        response.raise_for_status()
+        return self._normalize(response.json(), fields, fm)

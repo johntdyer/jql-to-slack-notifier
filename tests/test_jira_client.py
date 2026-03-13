@@ -111,3 +111,87 @@ class TestJiraClientSearch:
             result = client.search("project = X", ["key", "summary"])
             assert "assignee" not in result[0]
             assert "status" not in result[0]
+
+    def test_extra_api_fields_included_in_request(self):
+        client = _make_client()
+        with patch.object(client.session, "get", return_value=_api_response([])) as mock_get:
+            client.search("project = X", ["key", "summary"], extra_api_fields=["parent"])
+            params = mock_get.call_args[1]["params"]
+            assert "parent" in params["fields"]
+
+    def test_extra_api_fields_not_in_normalization(self):
+        # extra_api_fields like "parent" must not appear in the normalized result as a plain key
+        client = _make_client()
+        raw = [_raw_issue()]
+        with patch.object(client.session, "get", return_value=_api_response(raw)):
+            result = client.search("project = X", ["key", "summary"], extra_api_fields=["parent"])
+            # "parent" should not appear as a top-level key (it is extracted as parent_key)
+            assert "parent" not in result[0]
+
+    def test_normalizes_parent_key_for_subtask(self):
+        client = _make_client()
+        raw_issue = _raw_issue(key="CR-10")
+        raw_issue["fields"]["parent"] = {"key": "STORY-5", "fields": {"summary": "Parent"}}
+        with patch.object(client.session, "get", return_value=_api_response([raw_issue])):
+            result = client.search("project = X", ["key", "summary"], extra_api_fields=["parent"])
+            assert result[0]["parent_key"] == "STORY-5"
+
+    def test_no_parent_key_when_no_parent_field(self):
+        client = _make_client()
+        raw = [_raw_issue()]  # no parent field in response
+        with patch.object(client.session, "get", return_value=_api_response(raw)):
+            result = client.search("project = X", ["key", "summary"])
+            assert "parent_key" not in result[0]
+
+    def test_issuetype_extracted_when_in_api_response_even_if_not_in_fields(self):
+        # issuetype must be available to _enrich_parent_fields even when not a display field
+        client = _make_client()
+        raw = [_raw_issue(issuetype="Sub-task")]  # issuetype in raw response
+        with patch.object(client.session, "get", return_value=_api_response(raw)):
+            result = client.search("project = X", ["key", "summary"], extra_api_fields=["issuetype"])
+            assert result[0]["issuetype"] == "Sub-task"
+
+
+class TestJiraClientGetIssue:
+    def test_calls_issue_endpoint(self):
+        client = _make_client()
+        raw = _raw_issue(key="STORY-1", summary="Parent story")
+        mock_resp = MagicMock()
+        mock_resp.raise_for_status = MagicMock()
+        mock_resp.json.return_value = raw
+        with patch.object(client.session, "get", return_value=mock_resp) as mock_get:
+            client.get_issue("STORY-1", ["key", "summary"])
+            url = mock_get.call_args[0][0]
+            assert url == f"{BASE_URL}/rest/api/3/issue/STORY-1"
+
+    def test_returns_normalized_fields(self):
+        client = _make_client()
+        raw = _raw_issue(key="STORY-1", summary="Parent story")
+        mock_resp = MagicMock()
+        mock_resp.raise_for_status = MagicMock()
+        mock_resp.json.return_value = raw
+        with patch.object(client.session, "get", return_value=mock_resp):
+            result = client.get_issue("STORY-1", ["key", "summary"])
+            assert result["key"] == "STORY-1"
+            assert result["summary"] == "Parent story"
+
+    def test_resolves_custom_fields_via_field_map(self):
+        client = _make_client()
+        raw = _raw_issue(key="STORY-1")
+        raw["fields"]["customfield_10102"] = "2025-06-30"
+        mock_resp = MagicMock()
+        mock_resp.raise_for_status = MagicMock()
+        mock_resp.json.return_value = raw
+        with patch.object(client.session, "get", return_value=mock_resp):
+            result = client.get_issue(
+                "STORY-1", ["Target end"], field_map={"Target end": "customfield_10102"}
+            )
+            assert result["Target end"] == "2025-06-30"
+
+    def test_raises_on_http_error(self):
+        client = _make_client()
+        mock_resp = MagicMock()
+        mock_resp.raise_for_status.side_effect = Exception("404")
+        with patch.object(client.session, "get", return_value=mock_resp):
+            with pytest.raises(Exception, match="404"):
+                client.get_issue("MISSING-1", ["key"])

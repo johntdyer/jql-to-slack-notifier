@@ -46,6 +46,36 @@ def _merge_emoji_config(global_cfg: dict | None, query_cfg: dict | None) -> dict
     return merged
 
 
+_SUBTASK_TYPES = {"sub-task", "subtask"}
+
+
+def _enrich_parent_fields(
+    issues: list[dict],
+    jira: JiraClient,
+    parent_fields: list[str],
+    parent_field_map: dict,
+) -> None:
+    """Fetch custom fields from parent issues for subtasks and store them on each issue dict.
+
+    Only issues whose ``issuetype`` is a Jira sub-task type are enriched; issues like
+    "Normal CR", "Emergency CR", etc. use their own fields and are skipped.
+    Fields are stored as ``issue["↑ <field_name>"]`` so the formatter can label them distinctly.
+    Parent issues are fetched at most once per unique parent key (cached within the call).
+    """
+    cache: dict[str, dict] = {}
+    for issue in issues:
+        parent_key = issue.get("parent_key")
+        if not parent_key:
+            continue
+        if issue.get("issuetype", "").lower() not in _SUBTASK_TYPES:
+            continue
+        if parent_key not in cache:
+            cache[parent_key] = jira.get_issue(parent_key, parent_fields, parent_field_map)
+        parent_data = cache[parent_key]
+        for field_name in parent_fields:
+            issue[f"↑ {field_name}"] = parent_data.get(field_name, "")
+
+
 def run_query(
     query_cfg: dict,
     jira: JiraClient,
@@ -65,15 +95,25 @@ def run_query(
     effective_emoji_config = _merge_emoji_config(emoji_config, query_cfg.get("emojis"))
 
     field_map = query_cfg.get("field_map") or {}
+    parent_fields = query_cfg.get("parent_fields") or []
+    parent_field_map = query_cfg.get("parent_field_map") or {}
+
     print(f"  Running: {name}")
-    issues = jira.search(jql=jql, fields=fields, max_results=max_results, field_map=field_map)
+    issues = jira.search(
+        jql=jql, fields=fields, max_results=max_results, field_map=field_map,
+        extra_api_fields=["parent", "issuetype"] if parent_fields else None,
+    )
     print(f"  Found {len(issues)} issue(s)")
 
+    if parent_fields:
+        _enrich_parent_fields(issues, jira, parent_fields, parent_field_map)
+
+    display_fields = fields + [f"↑ {f}" for f in parent_fields]
     blocks = build_blocks(
         query_name=name,
         issues=issues,
         base_url=base_url,
-        fields=fields,
+        fields=display_fields,
         emoji_config=effective_emoji_config,
         tz_name=tz,
     )

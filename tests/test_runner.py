@@ -1,7 +1,7 @@
 import os
 import pytest
 from unittest.mock import MagicMock, patch, mock_open
-from src.runner import load_config, run_named, _merge_emoji_config
+from src.runner import load_config, run_named, _merge_emoji_config, _enrich_parent_fields
 
 
 MINIMAL_YAML = """
@@ -220,3 +220,82 @@ class TestRunNamed:
             run_named(config, "My Query")
             call_kwargs = mock_slack.post_message.call_args[1]
             assert call_kwargs["channel"] == "#eng"
+
+
+class TestEnrichParentFields:
+    def _make_jira(self, parent_data: dict) -> MagicMock:
+        jira = MagicMock()
+        jira.get_issue.return_value = parent_data
+        return jira
+
+    def _subtask(self, key="CR-1", parent_key="STORY-10"):
+        return {"key": key, "issuetype": "Sub-task", "parent_key": parent_key}
+
+    def test_subtask_gets_parent_fields_fetched(self):
+        issues = [self._subtask()]
+        jira = self._make_jira({"key": "STORY-10", "Target end": "2025-06-30"})
+        _enrich_parent_fields(issues, jira, ["Target end"], {"Target end": "customfield_10102"})
+        jira.get_issue.assert_called_once_with("STORY-10", ["Target end"], {"Target end": "customfield_10102"})
+
+    def test_parent_field_stored_with_arrow_prefix(self):
+        issues = [self._subtask()]
+        jira = self._make_jira({"key": "STORY-10", "Target end": "2025-06-30"})
+        _enrich_parent_fields(issues, jira, ["Target end"], {})
+        assert issues[0]["↑ Target end"] == "2025-06-30"
+
+    def test_issue_without_parent_key_skipped(self):
+        issues = [{"key": "CR-1", "issuetype": "Sub-task"}]  # no parent_key
+        jira = self._make_jira({})
+        _enrich_parent_fields(issues, jira, ["Target end"], {})
+        jira.get_issue.assert_not_called()
+        assert "↑ Target end" not in issues[0]
+
+    def test_non_subtask_cr_types_are_skipped(self):
+        for cr_type in ("Normal CR", "Emergency CR", "Standard CR", "Minor CR"):
+            issues = [{"key": "CR-1", "issuetype": cr_type, "parent_key": "STORY-10"}]
+            jira = self._make_jira({"key": "STORY-10", "Target end": "2025-06-30"})
+            _enrich_parent_fields(issues, jira, ["Target end"], {})
+            jira.get_issue.assert_not_called()
+            assert "↑ Target end" not in issues[0]
+
+    def test_subtask_type_case_insensitive(self):
+        for st_type in ("Sub-task", "sub-task", "Subtask", "subtask"):
+            issues = [{"key": "CR-1", "issuetype": st_type, "parent_key": "STORY-10"}]
+            jira = self._make_jira({"key": "STORY-10", "Target end": "2025-06-30"})
+            _enrich_parent_fields(issues, jira, ["Target end"], {})
+            jira.get_issue.assert_called()
+
+    def test_mixed_issue_types_only_subtasks_enriched(self):
+        issues = [
+            {"key": "CR-1", "issuetype": "Normal CR", "parent_key": "STORY-10"},
+            {"key": "CR-2", "issuetype": "Sub-task", "parent_key": "STORY-10"},
+        ]
+        jira = self._make_jira({"key": "STORY-10", "Target end": "2025-06-30"})
+        _enrich_parent_fields(issues, jira, ["Target end"], {})
+        assert "↑ Target end" not in issues[0]
+        assert issues[1]["↑ Target end"] == "2025-06-30"
+        assert jira.get_issue.call_count == 1
+
+    def test_parent_fetched_once_for_multiple_subtasks_same_parent(self):
+        issues = [self._subtask("CR-1"), self._subtask("CR-2")]
+        jira = self._make_jira({"key": "STORY-10", "Target end": "2025-06-30"})
+        _enrich_parent_fields(issues, jira, ["Target end"], {})
+        assert jira.get_issue.call_count == 1
+
+    def test_different_parents_each_fetched_once(self):
+        issues = [self._subtask("CR-1", "STORY-10"), self._subtask("CR-2", "STORY-20")]
+        jira = MagicMock()
+        jira.get_issue.side_effect = [
+            {"key": "STORY-10", "Target end": "2025-06-01"},
+            {"key": "STORY-20", "Target end": "2025-07-01"},
+        ]
+        _enrich_parent_fields(issues, jira, ["Target end"], {})
+        assert jira.get_issue.call_count == 2
+        assert issues[0]["↑ Target end"] == "2025-06-01"
+        assert issues[1]["↑ Target end"] == "2025-07-01"
+
+    def test_missing_parent_field_stored_as_empty_string(self):
+        issues = [self._subtask()]
+        jira = self._make_jira({"key": "STORY-10"})  # no "Target end" in parent data
+        _enrich_parent_fields(issues, jira, ["Target end"], {})
+        assert issues[0]["↑ Target end"] == ""

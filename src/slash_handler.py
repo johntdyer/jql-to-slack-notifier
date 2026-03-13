@@ -5,7 +5,7 @@ from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 
 from .formatter import build_blocks
-from .runner import _make_clients, _merge_emoji_config
+from .runner import _enrich_parent_fields, _make_clients, _merge_emoji_config
 
 _RUN_QUERY_ACTION_ID = "run_query"
 
@@ -58,19 +58,26 @@ def _run_response(
     fields = query_cfg.get("fields", ["key", "summary", "assignee", "status"])
     field_map = query_cfg.get("field_map") or {}
     tz = query_cfg.get("timezone", timezone)
+    parent_fields = query_cfg.get("parent_fields") or []
+    parent_field_map = query_cfg.get("parent_field_map") or {}
 
     issues = jira.search(
         jql=query_cfg["jql"],
         fields=fields,
         max_results=query_cfg.get("max_results", 50),
         field_map=field_map,
+        extra_api_fields=["parent", "issuetype"] if parent_fields else None,
     )
 
+    if parent_fields:
+        _enrich_parent_fields(issues, jira, parent_fields, parent_field_map)
+
+    display_fields = fields + [f"↑ {f}" for f in parent_fields]
     blocks = build_blocks(
         query_name=query_cfg["name"],
         issues=issues,
         base_url=base_url,
-        fields=fields,
+        fields=display_fields,
         emoji_config=effective_emoji_config,
         tz_name=tz,
     )

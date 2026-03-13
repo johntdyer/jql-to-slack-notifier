@@ -117,6 +117,13 @@ class TestBuildBlocks:
             if b["type"] == "section" and "/browse/" in b.get("text", {}).get("text", "")
         ]
 
+    def _all_text(self, block):
+        """Concatenate text from the block's title and all field items."""
+        parts = [block.get("text", {}).get("text", "")]
+        for f in block.get("fields", []):
+            parts.append(f.get("text", ""))
+        return " ".join(parts)
+
     def test_issue_link_in_block(self):
         blocks = build_blocks("My Query", [_issue(key="PROJ-42")], BASE_URL, FIELDS)
         issue_blocks = self._issue_blocks(blocks)
@@ -146,28 +153,40 @@ class TestBuildBlocks:
         footer_text = blocks[-1]["elements"][0]["text"]
         assert BASE_URL in footer_text
 
+    def test_issue_block_has_fields_array(self):
+        blocks = build_blocks("My Query", [_issue()], BASE_URL, FIELDS)
+        block = self._issue_blocks(blocks)[0]
+        assert "fields" in block
+        assert isinstance(block["fields"], list)
+
+    def test_fields_are_labeled(self):
+        blocks = build_blocks("My Query", [_issue(status="In Progress")], BASE_URL, FIELDS)
+        block = self._issue_blocks(blocks)[0]
+        field_labels = [f["text"] for f in block["fields"]]
+        assert any("*Status:*" in label for label in field_labels)
+
     def test_shows_status_emoji(self):
         blocks = build_blocks("My Query", [_issue(status="Done")], BASE_URL, FIELDS)
-        text = self._issue_blocks(blocks)[0]["text"]["text"]
-        assert ":white_check_mark:" in text
-        assert "Done" in text
+        all_text = self._all_text(self._issue_blocks(blocks)[0])
+        assert ":white_check_mark:" in all_text
+        assert "Done" in all_text
 
     def test_shows_priority_emoji(self):
         blocks = build_blocks("My Query", [_issue(priority="Critical")], BASE_URL, FIELDS)
-        text = self._issue_blocks(blocks)[0]["text"]["text"]
-        assert ":rotating_light:" in text
+        all_text = self._all_text(self._issue_blocks(blocks)[0])
+        assert ":rotating_light:" in all_text
 
     def test_shows_assignee(self):
         blocks = build_blocks("My Query", [_issue(assignee="Bob Lee")], BASE_URL, FIELDS)
-        text = self._issue_blocks(blocks)[0]["text"]["text"]
-        assert "Bob Lee" in text
+        all_text = self._all_text(self._issue_blocks(blocks)[0])
+        assert "Bob Lee" in all_text
 
     def test_omits_priority_when_not_in_fields(self):
         fields = ["key", "summary", "status"]
         blocks = build_blocks("My Query", [_issue()], BASE_URL, fields)
-        text = self._issue_blocks(blocks)[0]["text"]["text"]
-        assert ":rotating_light:" not in text
-        assert ":red_circle:" not in text
+        all_text = self._all_text(self._issue_blocks(blocks)[0])
+        assert ":rotating_light:" not in all_text
+        assert ":red_circle:" not in all_text
 
 
 # -- Emoji config overrides ---------------------------------------------------
@@ -204,17 +223,21 @@ class TestEmojiConfigOverrides:
         overrides = {"bug": ":lady_beetle:"}
         assert _type_emoji("Bug", overrides) == ":lady_beetle:"
 
-    def _issue_text(self, blocks):
-        return next(
-            b["text"]["text"] for b in blocks
+    def _issue_all_text(self, blocks):
+        block = next(
+            b for b in blocks
             if b["type"] == "section" and "/browse/" in b.get("text", {}).get("text", "")
         )
+        parts = [block.get("text", {}).get("text", "")]
+        for f in block.get("fields", []):
+            parts.append(f.get("text", ""))
+        return " ".join(parts)
 
     def test_build_blocks_uses_status_override(self):
         issue = _issue(status="In Progress")
         emoji_config = {"status": {"In Progress": ":fire:"}}
         blocks = build_blocks("Q", [issue], BASE_URL, FIELDS, emoji_config=emoji_config)
-        text = self._issue_text(blocks)
+        text = self._issue_all_text(blocks)
         assert ":fire:" in text
         assert ":large_blue_circle:" not in text
 
@@ -222,12 +245,12 @@ class TestEmojiConfigOverrides:
         issue = _issue(priority="High")
         emoji_config = {"priority": {"High": ":fire:"}}
         blocks = build_blocks("Q", [issue], BASE_URL, FIELDS, emoji_config=emoji_config)
-        text = self._issue_text(blocks)
+        text = self._issue_all_text(blocks)
         assert ":fire:" in text
         assert ":red_circle:" not in text
 
     def test_build_blocks_no_emoji_config_uses_defaults(self):
         issue = _issue(status="Done")
         blocks = build_blocks("Q", [issue], BASE_URL, FIELDS)
-        text = self._issue_text(blocks)
+        text = self._issue_all_text(blocks)
         assert ":white_check_mark:" in text

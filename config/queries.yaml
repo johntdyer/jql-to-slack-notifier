@@ -20,6 +20,9 @@ timezone: America/Los_Angeles
 # Built-in priority: blocker, critical, high, medium, low, lowest, trivial
 # Built-in type:     bug, story, task, epic, subtask, improvement, feature
 #
+
+slack_slash_command: "/runjql"  # slash command to register in Slack (e.g. "/jira")
+
 emojis:
   header: ":bell:"          # emoji shown before the query name in the header (set to "" to omit)
                             # to use the Jira logo: import icons/jira-emoji.svg as ":jira:" then set to ":jira:"
@@ -77,4 +80,11 @@ queries:
       - assignee
       - status
       - priority
+
+    field_map:
+      # add any custom fields referenced in `fields:` here, e.g.
+      # 'My Custom Field': customfield_12345
+
+      'Scheduled End Date': customfield_10369
+      'Scheduled Start Date': customfield_10365
 
